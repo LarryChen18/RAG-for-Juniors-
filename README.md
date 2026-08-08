@@ -143,6 +143,35 @@ https://www.docker.com/products/docker-desktop/
 ```
 https://github.com/zilliztech/attu/releases
 ```
+
+下载BGE模型：
+
+官方模型地址：
+```
+https://huggingface.co/BAAI/bge-large-zh-v1.5
+```
+
+进入页面后：
+
+点击：
+Files and versions
+
+你把看到的文件
+全部下载。
+
+下载完成后目录应该类似：
+```
+bge-large-zh-v1.5
+│
+├── config.json
+├── model.safetensors
+├── tokenizer.json
+├── tokenizer_config.json
+├── special_tokens_map.json
+├── modules.json
+└── README.md
+```
+然后放入你的项目，model文件夹下
 ## Step 1. Deploy Milvus
 
 
