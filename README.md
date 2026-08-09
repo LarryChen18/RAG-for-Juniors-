@@ -1,6 +1,6 @@
 # 📚 基于RAG的智能编程助手（初级版）
 
-这是一个基于大语言模型（Large Language Model, LLM）、视觉语言模型（Vision Language Model, VLM）以及向量数据库的检索增强生成系统（Retrieval-Augmented Generation, RAG）。
+这是一个基于大语言模型（Large Language Model, LLM）、视觉语言模型（Vision Language Model, VLM）以及向量数据库的检索增强生成系统（Retrieval-Augmented Generation, RAG）。本项目是最最最初级的RAG，后续还会持续优化！！！
 
 本项目实现了一个完整的多模态 RAG Pipeline，实现从非结构化文档到智能问答的全过程：
 
@@ -25,79 +25,70 @@
 因此，本项目采用 RAG 架构：
 
 ```
-用户问题
+             User Question
 
-    ↓
+                   ↓
 
-Query Embedding
+          Question Embedding
 
-    ↓
+                   ↓
 
-Milvus向量检索
+          Vector Similarity Search
 
-    ↓
+                   ↓
 
-Top-K相关知识
+          Retrieve Top-K Chunks
 
-    ↓
+                   ↓
 
-Prompt增强
+          Prompt Construction
 
-    ↓
+                   ↓
 
-LLM生成答案
+          Large Language Model
+
+                   ↓
+
+                Answer
 ```
 
 通过外部知识库增强大模型，使其能够基于指定文档完成更加准确、可靠的回答。
 
 
 
----
+其中：
 
-# 📂 Project Structure
+## Retrieval阶段
+
+负责：
+
+- 将问题转换为向量；
+- 在知识库中寻找语义相关内容；
+- 返回最相关的文本片段。
 
 
-```
-RAG_Project
+## Generation阶段
 
-│
-├── src
-│
-│   ├── OCR.py
-│   │      # 文档图片OCR模块
-│   │
-│   ├── milvus_encode.py
-│   │      # 文本切片、Embedding、Milvus建库
-│   │
-│   └── RAGSystem.py
-│          # RAG检索与问答主程序
-│
-│
-│
-│
-├── models
-│      # 本地Embedding模型
-│
-│
-├── requirements.txt
-│
-├── README.md
-│
-└── .env
+负责：
 
-```
+- 理解用户问题；
+- 结合检索到的上下文；
+- 生成最终自然语言答案。
+
+
+需要注意：
+
+> 检索结果并不是答案本身，而是提供给 LLM 的参考知识，减少模型的幻觉。
 
 
 ---
 
 # ⚙️ Environment Setup
 
-
 ## Requirements
 
 测试环境：
 
-- Windows 11
 - Python 3.x
 - Docker Desktop
 - Milvus 2.4.12
@@ -128,7 +119,7 @@ tqdm
 # 🚀 Run The Project
 ## Step 0. 下载docker desktop等
 
-下载docker网址：
+（1）下载docker网址：
 ````
 https://www.docker.com/products/docker-desktop/
 ````
@@ -139,12 +130,12 @@ https://www.docker.com/products/docker-desktop/
 
 ---
 
-下载Attu网址：
+（2）下载Attu网址：
 ```
 https://github.com/zilliztech/attu/releases
 ```
 
-下载BGE模型：
+（3）**下载BGE模型**：
 
 官方模型地址：
 ```
@@ -171,7 +162,7 @@ bge-large-zh-v1.5
 ├── modules.json
 └── README.md
 ```
-然后放入你的项目，model文件夹下
+然后放入你的项目的models文件夹下，没有就新建一下
 ## Step 1. Deploy Milvus
 
 
@@ -201,9 +192,9 @@ RAG
 └── README.md
 ```
 
-启动：
+**创建Milvus数据库：**
 
-先打开docker，保证还没有创建任何Milvus数据库的container
+先打开docker，保证还没有创建任何Milvus数据库的container，有的话请先删除（doge）
 
 然后运行（powershell）：
 
@@ -243,7 +234,11 @@ Attu 是 Milvus 的可视化管理工具，用于查看：
 - Metadata
 
 
-启动（直接在Attu中连接即可），下面是命令行写法：
+启动Attu：在docker上创建Milvus数据库后，点击进入主界面，直接点击**连接**，然后就可以看到
+
+![Attu](pictures/demo.png)
+
+下面是命令行写法：
 
 ```bash
 docker run -d \
@@ -274,6 +269,11 @@ localhost:19530
 
 # Step 3. Configure API Key
 
+浏览器访问阿里云百炼，去调用模型：
+
+```
+https://bailian.console.aliyun.com/
+```
 
 项目中使用阿里云 DashScope API 调用：
 
@@ -350,6 +350,9 @@ ocr_result.txt
 python encoding and Milvus.py
 ```
 
+运行成功时，你将看到：
+
+![Attu1](pictures/demo1.png)
 
 该模块完成完整知识库构建流程：
 
@@ -538,7 +541,7 @@ Qwen-VL
 
 优势：
 
-相比传统OCR，可以理解复杂文档结构。
+相比传统OCR，可以理解复杂文档结构，比如表格等。
 
 
 ---
@@ -549,7 +552,7 @@ Qwen-VL
 用户问题首先经过Embedding：
 
 ```
-Question
+Question（text）
 
 ↓
 
@@ -557,7 +560,7 @@ Vector
 ```
 
 
-然后在Milvus中搜索：
+然后把这个Vector放在Milvus中搜索：
 
 ```
 Vector Database
@@ -582,31 +585,10 @@ Top-K Similar Chunks
 
 检索结果不会直接作为答案。
 
-
-而是：
-
-```
-Retrieved Context
-
-+
-
-User Question
-
-↓
-
-Prompt
-
-↓
-
-LLM
-
-↓
-
-Answer
-```
+而是作为LLM回答的参考文本，用于增强LLM的回答
 
 
-LLM负责：
+即LLM负责：
 
 - 理解用户问题；
 - 综合检索内容；
@@ -615,213 +597,291 @@ LLM负责：
 
 ---
 
-# 🐛 Engineering Problems Solved
-
-
-## Problem 1: Milvus Container Conflict
-
-
-错误：
-
-```
-container name "/milvus-etcd" already exists
-```
-
-
-原因：
-
-Docker中存在旧Milvus容器。
-
-
-解决：
-
-删除旧容器：
-
-```bash
-docker rm -f milvus-etcd
-```
-
-
-重新启动Milvus。
-
-
----
-
-## Problem 2: OCR Duplicate Recognition
-
-
-问题：
-
-同一图片被OCR多次。
-
-
-原因：
-
-图片扫描过程中重复匹配不同大小写扩展名。
-
-
-例如：
-
-```
-page1.jpg
-
-page1.JPG
-```
-
-
-导致同一页面进入OCR队列。
-
-
-解决：
-
-统一文件后缀：
-
-```python
-file.lower()
-```
-
-
-并增加：
-
-```python
-image_files.sort()
-```
-
-
-保证：
-
-- 不重复；
-- 页面顺序正确。
-
-
----
 
 # 📈 Future Improvements
 
+## 1. 上下文增强检索（Context Enriched Retrieval）
 
-## 1. Add Reranker
+**原始定义：**
 
+- 检索到一个块时，不仅使用这个块，而且**自动带上相邻块**，保留局部上下文，避免信息碎片化。
 
-当前流程：
+**代码实现：**
 
-```
-Embedding Retrieval
+- 类：`ContextualRetriever(BaseRetriever)` 
 
-↓
+关键逻辑：
 
-LLM
-```
+```python
+class ContextualRetriever(BaseRetriever):
+    vectorstore: Chroma
+    all_chunks: List[Document]
+    k: int = 8
+    neighbor_window: int = 1
 
+    def _get_neighbors(self, doc: Document) -> List[Document]:
+        cid = doc.metadata["chunk_id"]
+        neigh: List[Document] = []
+        for d in self.all_chunks:
+            if abs(d.metadata["chunk_id"] - cid) <= self.neighbor_window:
+                neigh.append(d)
+        unique = {d.metadata["source"]: d for d in neigh}
+        return list(unique.values())
 
-未来优化：
+    def _get_relevant_documents(self, query: str) -> List[Document]:
+        base_retriever = self.vectorstore.as_retriever(
+            search_kwargs={"k": self.k}
+        )
+        base_docs = base_retriever.invoke(query)
 
-```
-Embedding Retrieval
+        expanded: List[Document] = []
+        added = set()
+        for d in base_docs:
+            neighs = self._get_neighbors(d)
+            for x in neighs:
+                key = x.metadata["source"]
+                if key not in added:
+                    expanded.append(x)
+                    added.add(key)
+        return expanded
 
-↓
-
-Reranker
-
-↓
-
-LLM
-```
-
-
-进一步提升检索准确率。
-
-
----
-
-## 2. Add Citation
-
-
-当前回答：
-
-```
-Answer
-```
-
-
-未来增加：
-
-```
-Answer
-
-+
-
-Source Document
-
-+
-
-Page Number
-
-+
-
-Reference Chunk
+    def get_relevant_documents(self, query: str) -> List[Document]:
+        return self._get_relevant_documents(query)
 ```
 
+在 `main()` 中实例化：
 
-提高可信度。
-
-
----
-
-## 3. Agent Extension
-
-
-当前系统：
-
-```
-RAG Question Answering
+```python
+retriever = ContextualRetriever(
+    vectorstore=vectorstore,
+    all_chunks=chunks,
+    k=8,
+    neighbor_window=1,
+)
 ```
 
+**作用：**
 
-未来扩展：
+- 先用 Chroma 做 Top-K 检索（`k=8`），再把每个检索结果的 **前后 1 个 chunk** 一起拿出来。
+- 实质上实现了「召回的是**局部上下文窗口**，而不是单一碎片」，缓解简单 RAG 的碎片化问题。
 
+------
+
+## 2. 上下文分块标题（Contextual Chunk Headers）
+
+**原始定义：**
+
+- 在分块的时候给每一个块前面加上一个「章节标题」或「局部摘要」，再对「标题 + 内容」一起做嵌入，提高语义检索效果。
+
+**代码实现：**
+
+- 同样是在 `load_ocr_and_chunk` 里实现。
+
+核心代码：
+
+```python
+header = chunk_text[:40].replace("\n", " ")
+header = f"OCR-Chunk-{chunk_id}: {header}"
+
+combined = header + "\n\n" + chunk_text
+
+chunks.append(Document(
+    page_content=combined,
+    metadata={
+        "chunk_id": chunk_id,
+        "header": header,
+        "source": f"ocr_chunk_{chunk_id}"
+    }
+))
 ```
-RAG
 
-↓
+说明：
 
-Agent System
+- 对每个 chunk，截取开头 40 个字符作为局部标题，再加上前缀 `"OCR-Chunk-{id}"`。
+- 将 `header + "\n\n" + chunk_text` 作为最终的 `page_content` 送进向量库。
+- 同时把 `header` 存入 `metadata["header"]`，方便后续调试或解释。
+
+**作用：**
+
+- 标题中往往包含本块的主题词，有助于向量检索更好地捕捉「块的语义中心」。
+- 在展示检索结果时，也可以用 header 提升可读性（例如在前端展示时显示标题）。
+
+------
+
+## 3. 查询转换（Query Transformation）
+
+**原始定义：**
+
+- 当用户问题有歧义时，通过查询重写、子查询分解等方式，把用户问题转成更适合检索的 query。
+
+**代码实现：**
+
+- 函数：`rewrite_query`，并在 `rag_pipeline` 中第一步调用。
+
+```python
+def rewrite_query(query: str) -> str:
+    prompt = f"""
+请将下面用户问题改写为更适合检索的查询，保持语义一致。
+
+【问题】{query}
+
+只输出改写后的句子。
+"""
+    return llm.invoke(prompt).strip()
 ```
 
+在 pipeline 中：
 
-增加：
+```python
+print("\n>>> 查询改写中 ...")
+rewritten = rewrite_query(question)
+print("改写后：", rewritten)
+```
 
-- Tool Calling
-- Memory
-- Planning
-- Multi-step Reasoning
+**作用：**
 
+- 利用 `DashscopeQwen` 先对用户的自然语言问题做轻量改写，消除歧义、补全关键信息。
+- 改写后的 query 再送入向量检索，通常能提高召回质量，减少「问得太短 / 太模糊」导致的检索失败。
 
----
+------
+
+## 4. 重新排序器（Reranker）
+
+**原始定义：**
+
+- 检索阶段先粗召回 Top-N（向量相似度），再用 LLM 对这些候选块**打分 + 重排**，选出 Top-K 提供给最终回答。
+
+**代码实现：**
+
+- 函数：`rerank_documents`，在 `rag_pipeline` 中第二阶段使用。
+
+核心逻辑：
+
+```python
+def rerank_documents(query: str, docs: List[Document], top_k: int = 5) -> List[Document]:
+    if not docs:
+        return []
+
+    context = ""
+    for i, d in enumerate(docs):
+        context += f"[候选 {i}]\n{d.page_content}\n\n"
+
+    prompt = f"""
+请为下面每个候选文档与查询的相关性进行 0-1 打分。
+
+【查询】{query}
+
+【候选文档】：
+{context}
+
+按以下 JSON 输出：
+{{
+  "scores": [
+    {{"idx": 文档编号, "score": 分数}},
+    ...
+  ]
+}}
+"""
+
+    import json
+    try:
+        resp = llm.invoke(prompt)
+        data = json.loads(resp)
+        scored = []
+        for item in data["scores"]:
+            scored.append((float(item["score"]), docs[int(item["idx"])]))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [d for s, d in scored[:top_k]]
+    except Exception:
+        return docs[:top_k]
+```
+
+在 pipeline 里：
+
+```python
+print("\n>>> 重排中 ...")
+ranked = rerank_documents(rewritten, base)
+print(f"重排后保留 {len(ranked)} 个")
+```
+
+**作用：**
+
+- 第一步（Chroma 检索）是「粗排」，基于向量相似度。
+- `rerank_documents` 是「精排」，用 LLM 结合 query 和候选内容，给出 0–1 连续相关性分数，再排序取前 5。
+- 有效过滤掉「语义相似但不相关」的噪声块，提高最终回答的依据质量。
+
+------
+
+## 5. 上下文压缩（Contextual Compression）
+
+**原始定义：**
+
+- 对检索到的多个块进行压缩，**只保留与问题相关的句子**，删除无关内容，减少 LLM 输入噪声。
+
+**代码实现：**
+
+- 函数：`compress_context` 
+
+```python
+def compress_context(query: str, docs: List[Document]) -> str:
+    if not docs:
+        return ""
+
+    context = "\n\n".join(d.page_content for d in docs)
+
+    prompt = f"""
+你将看到文档内容和用户问题。请只保留与问题最相关的句子，
+形成一个“压缩后的上下文”，不要回答问题。
+
+【问题】{query}
+
+【文档】：
+{context}
+
+请输出压缩结果：
+"""
+    return llm.invoke(prompt).strip()
+```
+
+在 pipeline 中：
+
+```python
+print("\n>>> 上下文压缩中 ...")
+compressed = compress_context(rewritten, ranked)
+print("压缩后：", compressed[:200], "...")
+```
+
+**作用：**
+
+- 把多个候选块合并成一段长文本，再由 LLM 根据当前 query 做一次「句子级筛选」。
+- 输出的是一个更短、更聚焦的上下文，极大降低了「无关内容干扰回答」的风险。
+- 同时降低了最终回答时的 token 消耗。
+
+------
 
 # 📝 Personal Learning Summary
 
 
-通过该项目，我完成了从理论学习到工程实践的完整 RAG 复现。
+通过该项目，我完成了从理论理解到工程实践的第一次完整AI应用开发。
 
+相比单纯调用LLM API，本项目让我理解了：
 
-主要掌握：
+一个智能系统不仅需要强大的模型，还需要合理的数据处理、知识组织、检索机制以及工程部署能力。
 
-- 理解 RAG 的整体架构；
-- 理解 Chunk、Embedding、Vector Search 的作用；
-- 掌握 Milvus 向量数据库部署；
-- 完成 OCR → Embedding → Retrieval → Generation 全流程；
-- 学习 Docker 环境部署；
-- 独立定位并解决工程问题。
-
-
-该项目作为进一步学习：
+RAG项目也是进一步学习：
 
 - LLM Agent；
-- Tool Calling；
 - Intelligent System；
+- AI Engineering；
 
-的重要基础工程实践。
+的重要基础。
 
+未来希望在此基础上继续探索：
+
+- Agent架构；
+- Tool Use；
+- Autonomous Reasoning；
+- AI + Robotics / Intelligent Control。
 
 
 
