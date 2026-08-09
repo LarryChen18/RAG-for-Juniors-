@@ -2,6 +2,9 @@
 
 这是一个基于大语言模型（Large Language Model, LLM）、视觉语言模型（Vision Language Model, VLM）以及向量数据库的检索增强生成系统（Retrieval-Augmented Generation, RAG）。本项目是最最最初级的RAG，后续还会持续优化！！！
 
+>本项目是主包第一个有关LLM Agent的小小小项目，代码由我大一上时参加的课题组的老师提供，我在2026年的暑假对其进行全面理解并进行详细批注，然后独自跑通后整理并撰写这个项目。
+
+
 本项目实现了一个完整的多模态 RAG Pipeline，实现从非结构化文档到智能问答的全过程：
 
 - 使用 **Qwen-VL** 完成图片OCR；
@@ -196,30 +199,24 @@ RAG
 
 先打开docker，保证还没有创建任何Milvus数据库的container，有的话请先删除（doge）
 
-然后运行（powershell）：
+如图：
+
+![docker1](pictures/docker1.png)
+
+先运行（powershell）：
+
+```bash
+cd milvus
+```
+然后运行：
 
 ```bash
 docker compose -f milvus-standalone-docker-compose.yml up -d
 ```
 
+若成功运行，如图：
 
-检查运行状态：
-
-```bash
-docker ps
-```
-
-
-正常情况下：
-
-```
-milvus-standalone
-milvus-etcd
-milvus-minio
-```
-
-均处于运行状态。
-
+![docker2](pictures/docker2.png)
 
 ---
 
@@ -234,11 +231,17 @@ Attu 是 Milvus 的可视化管理工具，用于查看：
 - Metadata
 
 
-启动Attu：在docker上创建Milvus数据库后，点击进入主界面，直接点击**连接**，然后就可以看到
+启动Attu：
+
+双击Attu的exe文件，点开如图（要跟主包的一样哦）：
+
+![Attu](pictures/demo2.png)
+
+在docker上创建Milvus数据库后，直接点击**连接**，然后就可以看到
 
 ![Attu](pictures/demo.png)
 
-下面是命令行写法：
+（可选）下面是命令行写法：
 
 ```bash
 docker run -d \
@@ -354,7 +357,7 @@ python encoding and Milvus.py
 
 ![Attu1](pictures/demo1.png)
 
-该模块完成完整知识库构建流程：
+**该模块完成完整知识库构建流程**：
 
 
 ## 1. Text Cleaning
