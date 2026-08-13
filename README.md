@@ -285,6 +285,20 @@ https://bailian.console.aliyun.com/
 
 然后分别写入src中的OCR和RAG文件中的“your api key”部分
 
+**需要更改路径的地方：**
+
+1.OCR.py中
+
+![name1](pictures/name1.png)
+
+2.encoding and Milvus.py中
+
+![name2](pictures/name2.png)
+
+3.RAG.py中
+
+![name3](pictures/name3.png)
+
 ---
 
 # Step 4. Document OCR
